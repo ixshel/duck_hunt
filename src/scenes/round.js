@@ -61,6 +61,11 @@ export function createRoundScene({ audio, assets }) {
       this.cross.visible = true;
     },
 
+    shootAt(nx, ny) {
+      this.setAim(nx, ny);
+      this.shoot();
+    },
+
     markMisses(count) {
       while (count-- > 0 && this.hitsBar.length < this.totalDucksThisRound) {
         this.hitsBar.push(false);
@@ -95,6 +100,8 @@ export function createRoundScene({ audio, assets }) {
     },
 
     finishWave(mode, resolvedCount) {
+      this.waveCooldown = 1.0;
+
       if (mode === "laugh") {
         dog.show("laugh");
         audio.play("dog_laugh", 0.85);

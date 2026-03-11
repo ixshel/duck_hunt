@@ -36,8 +36,8 @@ const hand = createHandController({
   onAim: (nx, ny) => {
     if (!useMouse) scene.setAim(nx, ny);
   },
-  onTrigger: () => {
-    if (!useMouse) scene.shoot();
+  onTrigger: (nx, ny) => {
+    if (!useMouse) scene.shootAt(nx, ny);
   },
   onStatus: (status) => {
     handStatusEl.textContent = status;
