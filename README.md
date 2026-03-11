@@ -5,7 +5,7 @@ A browser game inspired by classic duck-shooting gameplay, rebuilt with:
 - NES-style 256x240 pixel rendering
 - Webcam hand controls with MediaPipe Hands
 - Index finger = aim
-- Thumb + index pinch or a closed fist = shoot
+- Move hand to aim, close fist = shoot
 - Mouse fallback
 - Custom original sprites included in this project
 - Retro-style original sound effects included in this project
@@ -36,7 +36,7 @@ http://localhost:8080
 
 ## Controls
 
-- Hand mode: index finger aims, pinch or close fist shoots
+- Hand mode: move your hand to aim, then close your fist to shoot
 - Mouse mode: move + click
 - `M` toggles mouse/hand preference
 - `R` reload current wave ammo
@@ -46,7 +46,6 @@ http://localhost:8080
 
 Edit `src/hand.js`:
 
-- `pinchThreshold`: raise if pinches are not detected enough
 - `fistThreshold`: raise if making a fist does not shoot reliably
 - `smoothFactor`: lower if cursor shakes too much
 - `cooldownMs`: raise if it double-shoots

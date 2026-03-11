@@ -7,7 +7,6 @@ export function createHandController({ videoEl, onAim, onTrigger, onStatus }) {
     smoothFactor: 0.34,
     fastSmoothFactor: 0.58,
     fastMoveThreshold: 0.035,
-    pinchThreshold: 0.33,
     fistThreshold: 1.16,
     trackingGraceMs: 180,
     triggerActive: false,
@@ -53,53 +52,45 @@ export function createHandController({ videoEl, onAim, onTrigger, onStatus }) {
     const wrist = lm[0];
     const indexMcp = lm[5];
     const middleMcp = lm[9];
-    const pinkyMcp = lm[17];
-    const thumbTip = lm[4];
     const indexTip = lm[8];
-    const handScale = Math.max(
-      dist(wrist, middleMcp),
-      dist(indexMcp, pinkyMcp),
-      0.001
-    );
-    const pinchRatio = dist(thumbTip, indexTip) / handScale;
     const indexCurl = fingerCurlRatio(lm, wrist, 8, 5);
     const middleCurl = fingerCurlRatio(lm, wrist, 12, 9);
     const ringCurl = fingerCurlRatio(lm, wrist, 16, 13);
     const pinkyCurl = fingerCurlRatio(lm, wrist, 20, 17);
-
-    let nx = indexTip.x;
-    let ny = indexTip.y;
-    if (ctl.mirrorX) nx = 1 - nx;
-
-    const moveDelta = Math.hypot(nx - ctl.smoothX, ny - ctl.smoothY);
-    const smoothFactor = moveDelta > ctl.fastMoveThreshold
-      ? ctl.fastSmoothFactor
-      : ctl.smoothFactor;
-
-    ctl.smoothX = lerp(ctl.smoothX, nx, smoothFactor);
-    ctl.smoothY = lerp(ctl.smoothY, ny, smoothFactor);
-
-    onAim?.(ctl.smoothX, ctl.smoothY);
-
-    ctl.lastTrackedAt = Date.now();
-    setStatus("tracking");
-
-    const isPinching = pinchRatio < ctl.pinchThreshold;
     const isClosedFist = (
       indexCurl < ctl.fistThreshold &&
       middleCurl < ctl.fistThreshold &&
       ringCurl < ctl.fistThreshold &&
       pinkyCurl < ctl.fistThreshold
     );
-    const isTriggerGesture = isPinching || isClosedFist;
+
+    let nx = indexTip.x;
+    let ny = indexTip.y;
+    if (ctl.mirrorX) nx = 1 - nx;
+
+    if (!isClosedFist) {
+      const moveDelta = Math.hypot(nx - ctl.smoothX, ny - ctl.smoothY);
+      const smoothFactor = moveDelta > ctl.fastMoveThreshold
+        ? ctl.fastSmoothFactor
+        : ctl.smoothFactor;
+
+      ctl.smoothX = lerp(ctl.smoothX, nx, smoothFactor);
+      ctl.smoothY = lerp(ctl.smoothY, ny, smoothFactor);
+
+      onAim?.(ctl.smoothX, ctl.smoothY);
+    }
+
+    ctl.lastTrackedAt = Date.now();
+    setStatus("tracking");
+
     const now = Date.now();
     const canShoot = (now - ctl.lastShotAt) > ctl.cooldownMs;
 
-    if (isTriggerGesture && !ctl.triggerActive && canShoot) {
+    if (isClosedFist && !ctl.triggerActive && canShoot) {
       ctl.lastShotAt = now;
-      onTrigger?.(nx, ny);
+      onTrigger?.(ctl.smoothX, ctl.smoothY);
     }
-    ctl.triggerActive = isTriggerGesture;
+    ctl.triggerActive = isClosedFist;
   });
 
   async function start() {
